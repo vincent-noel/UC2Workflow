@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+CURRENT_DIR=$(pwd)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+cd $SCRIPT_DIR
+
+sample=$1
+repetition=$2
+prefix==$3
+bnd_file=$4
+cfg_file=$5
+out_file=$6
+err_file=$7
+
+# Do a copy of PhysiBoSS folder for the current execution
+physiboss_folder="PhysiBoSS_${sample}_${prefix}_${repetition}"
+cp -r PhysiBoSS ${physiboss_folder}
+
+# Prepare patient execution
+cp ${bnd_file} ${physiboss_folder}/config/boolean_network/personalized_epithelial_cell.bnd
+cp ${cfg_file} ${physiboss_folder}/config/boolean_network/personalized_epithelial_cell.cfg
+
+# Execute PhysiBoss
+cd ${physiboss_folder}
+if [ ! -d "output" ]
+then
+  mkdir output
+else
+  rm -rf output/*
+fi
+./myproj > ${out_file} 2> ${err_file}
+cd ..
+
+# Clean
+rm -rf $physiboss_folder
+
+cd $CURRENT_DIR
