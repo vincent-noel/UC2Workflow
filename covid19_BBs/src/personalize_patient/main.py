@@ -63,7 +63,7 @@ def invoke(input, output, config):
     t = input[3]
     ko = input[4]
     output = output[0]
-    # Building block invokation
+    # Building block invocation
     personalize_patient(norm_data=norm_data,
                         cells=cells,
                         model_prefix=model_prefix,

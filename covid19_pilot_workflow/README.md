@@ -18,7 +18,7 @@ of the ``covid19_BBs`` building blocks.
 The ``covid19_pilot.py`` contains the workflow code, and makes use of the
 ``helpers.py`` and ``utils.py`` files.
 
-The ``run.sh`` script contains the PyCOMPSs invokation for the ``covid19_pilot.py``
+The ``run.sh`` script contains the PyCOMPSs invocation for the ``covid19_pilot.py``
 workflow.
 
 ## NextFlow
