@@ -44,6 +44,6 @@ def invoke(input, output, config):
     # Process parameters
     metadata = input[0]
     outdir = output[0]
-    # Building block invokation
+    # Building block invocation
     single_cell_processing(metadata=metadata,
                            outdir=outdir)

@@ -24,7 +24,8 @@ option_list = list(
   make_option(c("-c", "--cells_meta_file"), type="character", default=NULL, help="Cells metadata file", metavar="character"),
   make_option(c("-m", "--model_prefix"), type="character", default=NULL, help="Model prefix", metavar="character"),
   make_option(c("-t", "--cell_type"), type="character", default=NULL, help="Selected cell type", metavar="character"),
-  make_option(c("-o", "--outdir"), type="character", default=NULL, help="Output folder", metavar="character"),
+  make_option(c("-o", "--model_outdir"), type="character", default=NULL, help="Model output folder", metavar="character"),
+  make_option(c("-p", "--personalized_result"), type="character", default=NULL, help="Personalization result tsv", metavar="character"),
   make_option(c("-k", "--ko_file"), type="character", default=NULL, help="KO genes file", metavar="character"),
   make_option(c("-r", "--rates_factor"), type="numeric", default=100, help="KO genes file", metavar="numeric"),
   make_option(c("-v", "--verbose"), type="logical", default=T, help="Verbose", metavar="T/F")
@@ -51,20 +52,7 @@ if(is.null(opt$cell_type)){
   stop("No cell type selected provided", call.=FALSE)
 }
 
-if(is.null(opt$outdir)) opt$outdir <- dirname(opt$exp_file)
-
-
-# DEBUG
-# opt$exp_file <- "./results5/C142/norm_data.tsv"
-# opt$cells_meta_file <- "./results5/C142/cells_metadata.tsv"
-# # opt$model_prefix <- "../covid19/PhysiBoSS/config/boolean_network/epithelial_cell_2"
-# opt$model_prefix <- "./data/epithelial_cell_2"
-# opt$cell_type <- "Epithelial_cells"
-# opt$ko_file <- "./data/ko_file.txt"
-# # opt$outdir <- NULL
-# opt$outdir <- "./results5/C142/"
-# opt$rates_factor <- 100
-
+if(is.null(opt$model_outdir)) opt$model_outdir <- dirname(opt$exp_file)
 
 cat("\n\n")
 cat("***********************************\n")
@@ -76,7 +64,8 @@ cat("cells metadata file: ", opt$cells_meta_file, "\n")
 cat("model prefix: ", opt$model_prefix, "\n")
 cat("cell type: ", opt$cell_type, "\n")
 cat("ko file: ", opt$ko_file, "\n")
-cat("outdir: ", opt$outdir, "\n")
+cat("model outdir: ", opt$model_outdir, "\n")
+cat("personalization result: ", opt$personalized_result, "\n")
 cat("verbose: ", opt$verbose, "\n\n")
 
 
@@ -183,10 +172,10 @@ if(!is.null(kos)){
 
 ###################### SAVE RESULTS
 
-write.table(subset_bin_cell_type_mean, file=paste0(opt$outdir,"/personalized_by_cell_type.tsv"), quote=F, sep="\t", row.names=T, col.names = T)
+write.table(subset_bin_cell_type_mean, file=opt$personalized_result, quote=F, sep="\t", row.names=T, col.names = T)
 
 ## PERSONALIZED MODELS
-model_outdirs <- paste0(opt$outdir, "/models")
+model_outdirs <- opt$model_outdir
 dir.create(model_outdirs)
 
 # wt

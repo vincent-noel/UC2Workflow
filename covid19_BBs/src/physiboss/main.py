@@ -55,7 +55,7 @@ def invoke(input, output, config):
     cfg_file = input[4]
     out_file = output[0]
     err_file = output[1]
-    # Building block invokation
+    # Building block invocation
     physiboss(sample=sample,
               repetition=repetition,
               prefix=prefix,

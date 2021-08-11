@@ -22,16 +22,14 @@ def get_patients(metadata):
     return patients_id
 
 
-def get_bnds_and_cfgs(outdir, sample):
+def get_bnds_and_cfgs(path):
     """
     Create a list of bnd files for the given patient.
     # bnd_files = os.path.join(outdir/$sample/models/*bnd)
 
-    :param outdir: Single cell output directory
-    :param sample: Patient id
+    :param path: Model folder containing the bnd and cfg files
     :return: List of triplets with name, bnd and cfv files associated to the patient id
     """
-    path = os.path.join(outdir, sample, "models")
     bnd_extension = "/*.bnd"
     bnd_files = glob.glob(path + bnd_extension)
     bnds_and_cfgs = []

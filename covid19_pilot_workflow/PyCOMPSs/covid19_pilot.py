@@ -37,12 +37,11 @@ def main():
         print("KO file provided")
     else:
         print("KO file not detected, running MABOSS")
-        ## MABOSS BUILDING BLOCK
+        ## MABOSS
         # This step produces the ko_file.txt, containing the set of selected gene candidates
         MaBoSS_analysis(args.model, args.data_folder, args.ko_file)
 
     # SINGLE CELL PROCESSING
-    ## SINGLE-CELL PROCESSING BUILDING BLOCK
     single_cell_processing(metadata=args.metadata,
                            outdir=args.outdir)
 
@@ -53,28 +52,33 @@ def main():
     # RUN BY PATIENT
     patients_id = get_patients(args.metadata)
     out_dirs = []
+    model_folders = []
     for sample in patients_id:
         print("> PERSONALIZING PATIENT %s" % sample)
 
-        ## PERSONALIZE PATIENT BUILDING BLOCK
+        # PERSONALIZE PATIENT
         norm_data = os.path.join(args.outdir, sample, "norm_data.tsv")
         cells_metadata = os.path.join(args.outdir, sample, "cells_metadata.tsv")
-        output_dir = os.path.join(args.outdir, sample)
-        out_dirs.append(output_dir)
+        model_output_dir = os.path.join(args.outdir, sample, "models")
+        model_folders.append(model_output_dir)
+        personalized_result = os.path.join(args.outdir, sample, "personalized_by_cell_type.tsv")
+        out_dirs.append(model_output_dir)
         personalize_patient(norm_data=norm_data,
                             cells=cells_metadata,
                             model_prefix=args.model_prefix,
                             t="Epithelial_cells",
-                            output_dir=output_dir,
+                            model_output_dir=model_output_dir,
+                            personalized_result=personalized_result,
                             ko=args.ko_file)
 
     # wait until each patient outdir
     # Currently needed because each personalization is written within args.outdir
+    # and we need to know how many bnds are inside (Depends on the number of ko)
     for i in range(len(out_dirs)):
         compss_wait_on_directory(out_dirs[i])
 
-    for sample in patients_id:
-        bnds_and_cfgs = get_bnds_and_cfgs(args.outdir, sample)
+    for sample, model_folder in zip(patients_id, model_folders):
+        bnds_and_cfgs = get_bnds_and_cfgs(model_folder)
         for prefix, bnd, cfg in bnds_and_cfgs:
             print(">> prefix: " + str(prefix))
             print(">> bnd: " + str(bnd))
