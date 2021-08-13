@@ -14,7 +14,7 @@ dataset=${COVID19_PILOT_DATASET}               # Currently using the "permedcoe"
 enqueue_compss \
     --num_nodes=2 \
     --exec_time=15 \
-    --worker_working_dir=${pwd} \
+    --worker_working_dir=$(pwd) \
     --log_level=off \
     --graph \
     --tracing \
