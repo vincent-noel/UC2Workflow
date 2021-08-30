@@ -1,11 +1,96 @@
-# TODO: Declare the building blocks to be used as rules.
+# PWD is mandatory due to the wrapped applications
+# resolving paths relative to their installation directory..
+# THIS SHOULD NOT BE THE CASE!
 
-rule BUILDINGBLOCK:
-    input:
-        dataset="/path/to/dataset",
-        config="/path/to/conf.yaml"
+reps=[1,2]
+samples=[]
+
+with open(os.environ["PWD"]+"/../../resources/data/metadata_small.tsv") as f:
+   next(f)
+   for line in f:
+        samples.append(line.split()[0])
+
+rule physiboss:
+    input: 
+        os.environ["PWD"]+"/result/{sample}/models/{prefix}.bnd",
+        os.environ["PWD"]+"/result/{sample}/models/{prefix}.cfg"
     output:
-        directory("output")
+        os.environ["PWD"]+"/result/{sample}/output_{prefix}_{rep}.out",
+        os.environ["PWD"]+"/result/{sample}/output_{prefix}_{rep}.err",
     shell:
-        # TODO: Change bb to the building block name.
-        "permedcoe execute building_block bb {input.dataset} {output} {input.config}"
+        "physiboss -d -i {wildcards.sample} {wildcards.rep} {wildcards.prefix} {input} -o {output} "
+
+checkpoint personalize:
+    input:
+        os.environ["PWD"]+"/result/{sample}/norm_data.tsv",
+        os.environ["PWD"]+"/result/{sample}/cells_metadata.tsv",
+        os.environ["PWD"]+"/ko_file.txt"
+    output:
+        directory(os.environ["PWD"]+"/result/{sample}/models"),
+        os.environ["PWD"]+"/result/{sample,[A-Za-z0-9]+}/personalized_by_cell_type.tsv"
+    params:
+        epi=os.environ["PWD"]+"/../../resources/data/epithelial_cell_2",
+    shell:
+        "personalize_patient -d -i {input[0]} {input[1]} {params.epi} Epithelial_cells {input[2]} -o {output}"
+
+
+metadata_dir=os.environ["PWD"]+"/"
+
+rule single_cell:
+    input:
+        metadata_dir+"{sample}.tsv",
+        os.environ["PWD"]+"/../../resources/data/"
+    output:
+        os.environ["PWD"]+"/result/{sample,[A-Za-z0-9._]+}/norm_data.tsv",
+        os.environ["PWD"]+"/result/{sample,[A-Za-z0-9._]+}/cells_metadata.tsv"
+        
+    shell:
+        "single_cell_processing -d -i {input} -o " + os.environ["PWD"]+"/result/"
+
+
+rule split_metadata:
+    input:
+        os.environ["PWD"]+"/../../resources/data/metadata_small.tsv"
+    output:
+        expand(metadata_dir+"{sample}.tsv" ,sample=samples)
+    shell:
+        "./split.sh {input}"
+ 
+
+rule maboss:
+    input:
+        os.environ["PWD"]+"/../../resources/data/"
+    output:
+        os.environ["PWD"]+"/ko_file.txt"
+    shell:
+        "maboss -d -i epithelial_cell_2 {input} -o {output}"
+
+def get_personalize(wildcards):
+    checkpoints.personalize.get(sample=wildcards.sample)
+    curr_dir=os.environ["PWD"] 
+    prefixs=glob_wildcards("{}/result/{}/models/{{prefix}}.cfg".format(curr_dir,wildcards.sample)).prefix
+    return expand(os.environ["PWD"]+"/result/" + wildcards.sample+ "/output_{prefix}_{rep}.out",prefix=prefixs,rep=reps)
+
+# Meta rule triggered
+# once per sample 
+# generates the request for the final files
+rule physiboss_aggregate:
+    input: get_personalize
+    output: os.environ["PWD"] + "/{sample}.touch"
+    shell:
+        "touch {output}"
+
+#def get_samples(wildcards):
+#    checkpoints.single_cell_aggregate.get()
+#    curr_dir=os.environ["PWD"] 
+#    print("SAMPLES")
+#    samples=glob_wildcards("{}/result/{{sample}}/cells_metadata.tsv".format(curr_dir)).sample
+#    return expand(os.environ["PWD"] + "/{sample}.touch",sample=samples)
+
+
+# Top rule which is re-evaluated after 
+# single_cell has run and we know the number of samples
+rule sample_aggregate:
+    input: expand(os.environ["PWD"]+"/{sample}.touch",sample=samples), os.environ["PWD"]+"/ko_file.txt"
+
+
