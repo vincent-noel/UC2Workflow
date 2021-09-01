@@ -11,6 +11,7 @@ bnd_file=$4
 cfg_file=$5
 out_file=$6
 err_file=$7
+results_dir=$8
 
 # Do a copy of PhysiBoSS folder for the current execution
 physiboss_folder="PhysiBoSS_${sample}_${prefix}_${repetition}"
@@ -21,6 +22,7 @@ cp ${bnd_file} ${physiboss_folder}/config/boolean_network/personalized_epithelia
 cp ${cfg_file} ${physiboss_folder}/config/boolean_network/personalized_epithelial_cell.cfg
 
 # Execute PhysiBoss
+# Prepare output folder (hardcoded into config.xml)
 cd ${physiboss_folder}
 if [ ! -d "output" ]
 then
@@ -28,7 +30,16 @@ then
 else
   rm -rf output/*
 fi
+# Execution
 ./myproj > ${out_file} 2> ${err_file}
+# Move results to the final directory
+if [ ! -d ${results_dir} ]
+then
+  mkdir -p ${results_dir}
+else
+  rm -rf ${results_dir}/*
+fi
+mv output/* ${results_dir}/.
 cd ..
 
 # Clean

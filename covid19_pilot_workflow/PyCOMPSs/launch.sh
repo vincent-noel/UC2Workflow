@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 export COMPSS_PYTHON_VERSION=3-ML
-module load COMPSs/2.9
+#module load COMPSs/2.9
+module use /apps/modules/modulefiles/tools/COMPSs/.custom
+module load TrunkJCB
 module load singularity/3.5.2
 module use /apps/modules/modulefiles/tools/COMPSs/libraries
 module load permedcoe  # generic permedcoe package
@@ -20,10 +22,11 @@ enqueue_compss \
     --tracing \
     --python_interpreter=python3 \
     covid19_pilot.py \
-        ${dataset}/metadata_small.tsv \
-        ${dataset}/epithelial_cell_2 \
+        ${dataset}metadata_small.tsv \
+        ${dataset}epithelial_cell_2 \
         $(pwd)/results/ \
-        $(pwd)/ko_file.txt 2 \
+        $(pwd)/ko_file.txt \
+        2 \
         epithelial_cell_2 \
         ${dataset}
 
