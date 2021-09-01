@@ -3,46 +3,57 @@
 # THIS SHOULD NOT BE THE CASE!
 
 reps=[1,2]
-samples=[]
 
-with open(os.environ["PWD"]+"/../../resources/data/metadata_small.tsv") as f:
+
+data_dir=os.environ["PWD"]+"/../../resources/data"
+result_dir=os.environ["PWD"]+"/result"
+
+metadata_file=data_dir+"/metadata_small.tsv"
+
+
+# For better parallelism, we split the metadata file
+# This is the folder where the split tsv:s are placed
+metadata_dir=os.environ["PWD"]+"/"
+
+
+samples=[]
+with open(metadata_file) as f:
    next(f)
    for line in f:
         samples.append(line.split()[0])
 
 rule physiboss:
     input: 
-        os.environ["PWD"]+"/result/{sample}/models/{prefix}.bnd",
-        os.environ["PWD"]+"/result/{sample}/models/{prefix}.cfg"
+        multiext(result_dir+"/{sample}/models/{prefix}",".bnd",".cfg")
     output:
-        os.environ["PWD"]+"/result/{sample}/output_{prefix}_{rep}.out",
-        os.environ["PWD"]+"/result/{sample}/output_{prefix}_{rep}.err",
+        multiext(result_dir+"/{sample}/output_{prefix}_{rep}",".out",".err")
     shell:
         "physiboss -d -i {wildcards.sample} {wildcards.rep} {wildcards.prefix} {input} -o {output} "
 
 checkpoint personalize:
     input:
-        os.environ["PWD"]+"/result/{sample}/norm_data.tsv",
-        os.environ["PWD"]+"/result/{sample}/cells_metadata.tsv",
+        result_dir+"/{sample}/norm_data.tsv",
+        result_dir+"/{sample}/cells_metadata.tsv",
         os.environ["PWD"]+"/ko_file.txt"
     output:
-        directory(os.environ["PWD"]+"/result/{sample}/models"),
-        os.environ["PWD"]+"/result/{sample,[A-Za-z0-9]+}/personalized_by_cell_type.tsv"
+        directory(result_dir+"/{sample}/models"),
+        result_dir+"/{sample,[A-Za-z0-9]+}/personalized_by_cell_type.tsv"
     params:
-        epi=os.environ["PWD"]+"/../../resources/data/epithelial_cell_2",
+        # We can not use the input/output as this is not an actual file
+        # The interface to the BB is clumsy at the moment. 
+        epi=data_dir+"/epithelial_cell_2",
     shell:
         "personalize_patient -d -i {input[0]} {input[1]} {params.epi} Epithelial_cells {input[2]} -o {output}"
 
 
-metadata_dir=os.environ["PWD"]+"/"
 
 rule single_cell:
     input:
         metadata_dir+"{sample}.tsv",
-        os.environ["PWD"]+"/../../resources/data/"
+        data_dir
     output:
-        os.environ["PWD"]+"/result/{sample,[A-Za-z0-9._]+}/norm_data.tsv",
-        os.environ["PWD"]+"/result/{sample,[A-Za-z0-9._]+}/cells_metadata.tsv"
+        result_dir+"/{sample,[A-Za-z0-9._]+}/norm_data.tsv",
+        result_dir+"/{sample,[A-Za-z0-9._]+}/cells_metadata.tsv"
         
     shell:
         "single_cell_processing -d -i {input} -o " + os.environ["PWD"]+"/result/"
@@ -50,7 +61,7 @@ rule single_cell:
 
 rule split_metadata:
     input:
-        os.environ["PWD"]+"/../../resources/data/metadata_small.tsv"
+        metadata_file
     output:
         expand(metadata_dir+"{sample}.tsv" ,sample=samples)
     shell:
@@ -59,7 +70,7 @@ rule split_metadata:
 
 rule maboss:
     input:
-        os.environ["PWD"]+"/../../resources/data/"
+        data_dir
     output:
         os.environ["PWD"]+"/ko_file.txt"
     shell:
@@ -67,9 +78,8 @@ rule maboss:
 
 def get_personalize(wildcards):
     checkpoints.personalize.get(sample=wildcards.sample)
-    curr_dir=os.environ["PWD"] 
-    prefixs=glob_wildcards("{}/result/{}/models/{{prefix}}.cfg".format(curr_dir,wildcards.sample)).prefix
-    return expand(os.environ["PWD"]+"/result/" + wildcards.sample+ "/output_{prefix}_{rep}.out",prefix=prefixs,rep=reps)
+    prefixs=glob_wildcards("{}/{}/models/{{prefix}}.cfg".format(result_dir,wildcards.sample)).prefix
+    return expand(result_dir +"/"+ wildcards.sample+ "/output_{prefix}_{rep}.out",prefix=prefixs,rep=reps)
 
 # Meta rule triggered
 # once per sample 
@@ -80,17 +90,11 @@ rule physiboss_aggregate:
     shell:
         "touch {output}"
 
-#def get_samples(wildcards):
-#    checkpoints.single_cell_aggregate.get()
-#    curr_dir=os.environ["PWD"] 
-#    print("SAMPLES")
-#    samples=glob_wildcards("{}/result/{{sample}}/cells_metadata.tsv".format(curr_dir)).sample
-#    return expand(os.environ["PWD"] + "/{sample}.touch",sample=samples)
 
 
 # Top rule which is re-evaluated after 
 # single_cell has run and we know the number of samples
 rule sample_aggregate:
-    input: expand(os.environ["PWD"]+"/{sample}.touch",sample=samples), os.environ["PWD"]+"/ko_file.txt"
+    input: expand(os.environ["PWD"]+"/{sample}.touch",sample=samples)
 
 
