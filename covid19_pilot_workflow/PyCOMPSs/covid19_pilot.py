@@ -9,15 +9,15 @@ from permedcoe import set_debug
 from maboss import MaBoSS_analysis
 from single_cell_processing import single_cell_processing
 from personalize_patient import personalize_patient
-from physiboss import physiboss
+from physiboss import physiboss_model
 from meta_analysis import meta_analysis
 # Import utils
 from utils import parse_input_parameters
-from helpers import get_patients
-from helpers import get_bnds_and_cfgs
+from helpers import get_genefiles
 
 # PyCOMPSs imports
 from pycompss.api.api import compss_wait_on_directory
+from pycompss.api.api import compss_wait_on_file
 
 
 
@@ -42,12 +42,16 @@ def main():
         ## MABOSS
         # This step produces the ko_file.txt, containing the set of selected gene candidates
         MaBoSS_analysis(args.model, args.data_folder, args.ko_file)
+        compss_wait_on_file(args.ko_file)
+
+    genes = [""]  # first empty since it is the original without gene ko
+    with open(args.ko_file, "r") as ko_fd:
+        genes += ko_fd.read().splitlines()
 
     # Iterate over the metadata file processing each patient
+    out_dirs = {}
     with open(args.metadata, "r") as metadata_fd:
         reader = csv.DictReader(metadata_fd, delimiter="\t")
-        out_dirs = []
-        model_folders = []
         for line in reader:
             sample = line["id"]
             # SINGLE CELL PROCESSING
@@ -80,11 +84,10 @@ def main():
             # PERSONALIZE PATIENT
             print("> PERSONALIZING PATIENT %s" % sample)
             pp_dir = os.path.join(sample_out_dir, "personalize_patient")
-            model_output_dir = os.path.join(pp_dir, "models")
             os.makedirs(pp_dir)
-            model_folders.append(model_output_dir)
+            model_output_dir = os.path.join(pp_dir, "models")
+            out_dirs[sample] = model_output_dir
             personalized_result = os.path.join(pp_dir, "personalized_by_cell_type.tsv")
-            out_dirs.append((sample, model_output_dir))
             personalize_patient(norm_data=norm_data,
                                 cells=cells_metadata,
                                 model_prefix=args.model_prefix,
@@ -96,17 +99,15 @@ def main():
     # Wait for all personalization
     # Currently needed because each personalization is written within args.outdir
     # and we need to know how many bnds are inside (Depends on the number of ko)
-    for _, model_folder in out_dirs:
-        compss_wait_on_directory(model_folder)
+    #for _, model_folder in out_dirs:
+    #    compss_wait_on_directory(model_folder)
 
     physiboss_results = []
     physiboss_subfolder = "physiboss_results"  # do not modify (hardcoded in meta-analysis)
-    for sample, model_folder in out_dirs:
-        bnds_and_cfgs = get_bnds_and_cfgs(model_folder)
-        for prefix, bnd, cfg in bnds_and_cfgs:
+    for sample, model_folder in out_dirs.items():
+        genefiles = get_genefiles(args.model, genes)
+        for prefix in genefiles:
             print(">> prefix: " + str(prefix))
-            print(">> bnd: " + str(bnd))
-            print(">> cfg: " + str(cfg))
             for r in range(1, args.reps + 1):
                 print(">>> Repetition: " + str(r))
                 name = "output_" + sample + "_" + prefix + "_" + str(r)
@@ -119,14 +120,14 @@ def main():
                 results_dir = os.path.join(args.outdir, sample, physiboss_subfolder, prefix + "_physiboss_run_" + str(r))
                 os.makedirs(results_dir)
                 physiboss_results.append(results_dir)
-                physiboss(sample=sample,
-                            repetition=r,
-                            prefix=prefix,
-                            bnd_file=bnd,
-                            cfg_file=cfg,
-                            out_file=out_file,
-                            err_file=err_file,
-                            results_dir=results_dir)
+                # PHYSIBOSS
+                physiboss_model(sample=sample,
+                                repetition=r,
+                                prefix=prefix,
+                                model_dir=model_folder,
+                                out_file=out_file,
+                                err_file=err_file,
+                                results_dir=results_dir)
 
     # Wait for all physiboss
     # Currently needed because the meta analysis requires all of them
@@ -138,6 +139,7 @@ def main():
     # Perform last step: meta analysis
     final_result_dir = os.path.join(args.outdir, "meta_analysis")
     os.makedirs(final_result_dir)
+    # META-ANALYSIS
     meta_analysis(meta_file=args.metadata,
                   out_dir=args.outdir,
                   model_prefix=args.model,

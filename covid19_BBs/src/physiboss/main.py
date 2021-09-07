@@ -5,6 +5,7 @@ from permedcoe import binary
 from permedcoe import task
 from permedcoe import FILE_IN
 from permedcoe import FILE_OUT
+from permedcoe import DIRECTORY_IN
 from permedcoe import DIRECTORY_OUT
 
 # Import single container and assets definitions
@@ -13,6 +14,28 @@ from covid19_BBs_commons.assets import PHYSIBOSS_ASSETS
 
 # Globals# Globals
 PHYSIBOSS_BINARY = os.path.join(PHYSIBOSS_ASSETS, "PhysiBoSS.sh")
+PHYSIBOSS_MODEL_BINARY = os.path.join(PHYSIBOSS_ASSETS, "PhysiBoSS_model.sh")
+
+
+@container(engine="SINGULARITY", image=PHYSIBOSS_CONTAINER)
+@binary(binary=PHYSIBOSS_MODEL_BINARY)
+@task(model_dir=DIRECTORY_IN, out_file=FILE_OUT, err_file=FILE_OUT, results_dir=DIRECTORY_OUT)
+def physiboss_model(sample="C141",
+                    repetition=1,
+                    prefix="epithelial_cell_2_personalized",
+                    model_dir=None,
+                    out_file=None,
+                    err_file=None,
+                    results_dir=None):
+    """
+    Performs the PhysiCell + MaBoSS analysis.
+
+    The Definition is equal to:
+        ./physiboss_model.sh <sample> <repetition> <prefix> <model_dir> \
+                             <file_name> <out_file> <err_file> <results_dir>
+    """
+    # Empty function since it represents a binary execution:
+    pass
 
 
 @container(engine="SINGULARITY", image=PHYSIBOSS_CONTAINER)

@@ -2,40 +2,20 @@ import os
 import glob
 from pathlib import Path
 
-def get_patients(metadata):
-    """
-    Parse the "metadata" file and get the patients
-    """
-    with open(metadata, 'r') as metadata_fd:
-        metadata_content = metadata_fd.readlines()
-    # Clean whitespaces begin and end
-    metadata_content = [line.strip() for line in metadata_content]
-    # Remove header
-    metadata_content = metadata_content[1:]
-    # Parse lines
-    parsed_metadata = []
-    for line in metadata_content:
-        elements = line.split()
-        parsed_metadata.append(elements)
-    # Filter patients
-    patients_id = [patient[0] for patient in parsed_metadata]
-    return patients_id
 
-
-def get_bnds_and_cfgs(path):
+def get_genefiles(prefix, genes):
     """
-    Create a list of bnd files for the given patient.
-    # bnd_files = os.path.join(outdir/$sample/models/*bnd)
+    Create a list of genes files for the given patient.
 
-    :param path: Model folder containing the bnd and cfg files
-    :return: List of triplets with name, bnd and cfv files associated to the patient id
+    :param prefix: prefix
+    :param genes: KO genes
+    :return: List of names to be processed
     """
-    bnd_extension = "/*.bnd"
-    bnd_files = glob.glob(path + bnd_extension)
-    bnds_and_cfgs = []
-    for bnd_f in bnd_files:
-        bnd_f_p = Path(bnd_f)
-        name = str(bnd_f_p.stem)
-        cfg_f = str(bnd_f_p.with_suffix(".cfg"))
-        bnds_and_cfgs.append((name, bnd_f, cfg_f))
-    return bnds_and_cfgs
+    genefiles = []
+    for gene in genes:
+        if gene != "":
+            name = prefix + "_personalized__" + gene + "_ko"
+        else:
+            name = prefix + "_personalized"
+        genefiles.append(name)
+    return genefiles
