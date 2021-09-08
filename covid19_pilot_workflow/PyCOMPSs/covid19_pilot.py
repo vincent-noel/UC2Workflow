@@ -99,22 +99,22 @@ def main():
                                 personalized_result=personalized_result,
                                 ko=args.ko_file)
 
-            for prefix in genefiles:
-                print(">> prefix: " + str(prefix))
+            for gene_prefix in genefiles:
+                print(">> prefix: " + str(gene_prefix))
                 for r in range(1, args.reps + 1):
                     print(">>> Repetition: " + str(r))
-                    name = "output_" + sample + "_" + prefix + "_" + str(r)
+                    name = "output_" + sample + "_" + gene_prefix + "_" + str(r)
                     out_file = os.path.join(args.outdir, sample, physiboss_subfolder, name + ".out")
                     err_file = os.path.join(args.outdir, sample, physiboss_subfolder, name + ".err")
                     print("\t- " + out_file)
                     print("\t- " + err_file)
-                    results_dir = os.path.join(args.outdir, sample, physiboss_subfolder, prefix + "_physiboss_run_" + str(r))
+                    results_dir = os.path.join(args.outdir, sample, physiboss_subfolder, gene_prefix + "_physiboss_run_" + str(r))
                     os.makedirs(results_dir)
                     physiboss_results.append(results_dir)
                     # PHYSIBOSS
                     physiboss_model(sample=sample,
                                     repetition=r,
-                                    prefix=prefix,
+                                    prefix=gene_prefix,
                                     model_dir=model_output_dir,
                                     out_file=out_file,
                                     err_file=err_file,
