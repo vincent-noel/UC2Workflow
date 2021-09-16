@@ -4,6 +4,7 @@ from permedcoe import container
 from permedcoe import binary
 from permedcoe import task
 from permedcoe import FILE_IN
+from permedcoe import FILE_OUT
 from permedcoe import DIRECTORY_OUT
 
 # Import single container and assets definitions
@@ -12,20 +13,35 @@ from covid19_BBs_commons.assets import SINGLE_CELL_PROCESSING_ASSETS
 
 # Globals
 SINGLE_CELL_PROCESSING_BINARY = os.path.join(SINGLE_CELL_PROCESSING_ASSETS,
-                                             "single_cell_processing.sh")
+                                             "single_cell_processing_individual.sh")
 
 
 @container(engine="SINGULARITY", image=SINGLE_CELL_PROCESSING_CONTAINER)
 @binary(binary=SINGLE_CELL_PROCESSING_BINARY)
-@task(metadata=FILE_IN,
+@task(p_file=FILE_IN,
+      norm_data=FILE_OUT,
+      raw_data=FILE_OUT,
+      scaled_data=FILE_OUT,
+      cells_metadata=FILE_OUT,
       outdir=DIRECTORY_OUT)
-def single_cell_processing(metadata_flag='-m', metadata=None,
+def single_cell_processing(id_flag='-i', p_id="C141",
+                           group_flag='-g', p_group="C",
+                           file_flag='-f', p_file=None,
+                           norm_data_flag='-n', norm_data=None,
+                           raw_data_flag='-r', raw_data=None,
+                           scaled_data_flag='-c', scaled_data=None,
+                           cells_metadata_flag='-m', cells_metadata=None,
                            outdir_flag='-o', outdir=None):
     """
     Performs the Single Cell processing.
 
     The Definition is equal to:
-        ./single_cell_processing.sh -m <metadata> -o <outdir>
+        ./single_cell_processing.sh -i <id> -g <group> -f <file> \
+                                    -nd <norm_data> \
+                                    -rd <raw_data> \
+                                    -sd <scaled_data> \
+                                    -cm <cells_metadata> \
+                                    -o <outdir>
     """
     # Empty function since it represents a binary execution:
     pass
@@ -42,8 +58,20 @@ def invoke(input, output, config):
         None
     """
     # Process parameters
-    metadata = input[0]
-    outdir = output[0]
+    p_id = input[0]
+    p_group = input[1]
+    p_file = input[2]
+    norm_data = output[0]
+    raw_data = output[1]
+    scaled_data = output[2]
+    cells_metadata = output[3]
+    outdir = output[4]
     # Building block invocation
-    single_cell_processing(metadata=metadata,
+    single_cell_processing(p_id=p_id,
+                           p_group=p_group,
+                           p_file=p_file,
+                           norm_data=norm_data,
+                           raw_data=raw_data,
+                           scaled_data=scaled_data,
+                           cells_metadata=cells_metadata,
                            outdir=outdir)

@@ -7,11 +7,13 @@ cd $SCRIPT_DIR
 sample=$1
 repetition=$2
 prefix==$3
-bnd_file=$4
-cfg_file=$5
-out_file=$6
-err_file=$7
-results_dir=$8
+model_dir=$4
+out_file=$5
+err_file=$6
+results_dir=$7
+
+bnd_file=${model_dir}/${prefix}.bnd
+cfg_file=${model_dir}/${prefix}.cfg
 
 # Do a copy of PhysiBoSS folder for the current execution
 physiboss_folder="PhysiBoSS_${sample}_${prefix}_${repetition}"
