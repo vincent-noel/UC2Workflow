@@ -30,7 +30,8 @@ option_list = list(
   make_option(c("-c", "--scaled_data"), type="character", default=NULL, help="Output scaled data", metavar="character"),
   make_option(c("-m", "--cells_metadata"), type="character", default=NULL, help="Output cells metadata", metavar="character"),
   make_option(c("-v", "--verbose"), type="logical", default=T, help="Verbose", metavar="T|F"),
-  make_option(c("-s", "--serialize"), type="logical", default=F, help="Save Seurat object", metavar="T|F")
+  make_option(c("-s", "--serialize"), type="logical", default=F, help="Save Seurat object", metavar="T|F"),
+  make_option(c("-p", "--parallelize"), type="integer", default=1, help="Number of CPUs used to parallelize", metavar="integer_number")
 )
 opt_parser <- OptionParser(option_list=option_list, add_help_option = T)
 opt <- parse_args(opt_parser)
@@ -79,8 +80,16 @@ cat("id: ", opt$id, "\n")
 cat("group: ", opt$group, "\n")
 cat("file: ", opt$file, "\n")
 cat("outdir: ", opt$outdir, "\n")
-cat("verbose: ", opt$verbose, "\n\n")
+cat("verbose: ", opt$verbose, "\n")
+cat("parallelize: ", opt$parallelize, "\n\n")
 
+
+# Internal parallelization of Seurat using future.
+# Only these functions are parallelized: NormalizeData, ScaleData, FindClusters (and JackStraw, FindMarkers, FindIntegrationAnchors)
+# From https://satijalab.org/seurat/archive/v3.0/future_vignette.html
+if (opt$parallelize > 1){
+  plan("multicore", workers = opt$parallelize)
+}
 
 ###################### LOAD DATA
 

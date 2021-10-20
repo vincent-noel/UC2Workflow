@@ -12,10 +12,16 @@ cfg_file=$5
 out_file=$6
 err_file=$7
 results_dir=$8
+parallel=$9
 
 # Do a copy of PhysiBoSS folder for the current execution
 physiboss_folder="PhysiBoSS_${sample}_${prefix}_${repetition}"
 cp -r PhysiBoSS ${physiboss_folder}
+
+# Update the number of threads
+sed -i "s/<omp_num_threads>6/<omp_num_threads>${parallel}/g" "${physiboss_folder}/config/PhysiCell_settings.xml"
+echo "USING:"
+grep "omp_num_threads" "${physiboss_folder}/config/PhysiCell_settings.xml"
 
 # Prepare patient execution
 cp ${bnd_file} ${physiboss_folder}/config/boolean_network/personalized_epithelial_cell.bnd

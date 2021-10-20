@@ -119,6 +119,10 @@ def main():
                                     out_file=out_file,
                                     err_file=err_file,
                                     results_dir=results_dir)
+                    break
+                break
+            break
+
 
     # Wait for all physiboss
     # Currently needed because the meta analysis requires all of them
@@ -127,6 +131,7 @@ def main():
     for physiboss_result in physiboss_results:
         compss_wait_on_directory(physiboss_result)
 
+    """
     # Perform last step: meta analysis
     final_result_dir = os.path.join(args.outdir, "meta_analysis")
     os.makedirs(final_result_dir)
@@ -138,6 +143,7 @@ def main():
                   reps=args.reps,
                   verbose="T",
                   results=final_result_dir)
+    """
 
 
 if __name__ == "__main__":

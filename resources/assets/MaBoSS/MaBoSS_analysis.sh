@@ -3,6 +3,7 @@
 projectname=$1
 data_folder=$2
 ko_file=$3
+parallel=$4
 
 CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -19,6 +20,11 @@ fi
 cp ${data_folder}/{"$projectname".bnd,"$projectname".cfg} ./
 cp ${data_folder}/inputs.txt ./
 cp ${data_folder}/outputs.txt ./
+
+# Adapt the number of computing units for parallel execution:
+sed -i "s/thread_count=4/thread_count=${parallel}/g" "${data_folder}/${projectname}.cfg"
+echo "USING:"
+grep "thread_count" "${data_folder}/${projectname}.cfg"
 
 ./run_MaBoSS_Unix_Stew.sh $projectname
 
