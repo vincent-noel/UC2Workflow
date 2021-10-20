@@ -25,6 +25,7 @@ option_list = list(
   make_option(c("-o", "--outdir"), type="character", default=NULL, help="Output folder", metavar="character"),
   make_option(c("-v", "--verbose"), type="logical", default=T, help="Verbose", metavar="T|F"),
   make_option(c("-s", "--serialize"), type="logical", default=F, help="Save Seurat object", metavar="T|F")
+  make_option(c("-p", "--parallelize"), type="integer", default=F, help="Number of CPUs used to parallelize", metavar="integer number")
 )
 opt_parser <- OptionParser(option_list=option_list, add_help_option = T)
 opt <- parse_args(opt_parser)
@@ -48,6 +49,15 @@ if (is.null(opt$out)){
 #opt$verbose <- F
 # i=1
 
+# Internal parallelization of Seurat using future. 
+# Only these functions are parallelized: NormalizeData, ScaleData, FindClusters (and JackStraw, FindMarkers, FindIntegrationAnchors)
+# From https://satijalab.org/seurat/archive/v3.0/future_vignette.html
+if (is.null(opt$parallelize)){
+  opt$parallelize <- 1
+}
+if (opt$parallelize > 1){
+  plan("multiprocess", workers = opt$parallelize)
+}
 
 cat("\n\n")
 cat("***********************************\n")
@@ -55,6 +65,7 @@ cat("*** SINGLE-CELL DATA PROCESSING ***\n")
 cat("***********************************\n\n")
 cat("metadata file: ", opt$meta_file, "\n")
 cat("outdir: ", opt$outdir, "\n")
+cat("number of CPUs used: ", opt$parallelize, "\n")
 cat("verbose: ", opt$verbose, "\n\n")
 
 
