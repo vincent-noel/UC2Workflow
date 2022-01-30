@@ -3,11 +3,11 @@ From: ubuntu
 Stage: build
 
 %environment
-    export PATH="/usr/local/bin:$PATH"
+    export PATH="/usr/local/bin:/usr/local/bin/MaBoSS/:/usr/local/bin/MaBoSS/MaBoSS_analysis:$PATH"
 
 %post
-    apt-get update -y
-    apt-get install -y r-base default-jre
+    DEBIAN_FRONTEND=noninteractive apt-get update -y
+    DEBIAN_FRONTEND=noninteractive apt-get install -y r-base default-jre
 
 %files
     assets/MaBoSS /usr/local/bin

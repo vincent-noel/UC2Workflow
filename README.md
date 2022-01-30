@@ -1,8 +1,8 @@
-# COVID-19 Pilot Workflow
+# Use Case 2 Workflow
 
-This folder contains all needed for the COVID-19 Pilot Workflow.
+This folder contains all needed for the Use Case 2 Workflow : Drug synergies on cell lines.
 
-- [COVID-19 Pilot Workflow](#covid-19-pilot-workflow)
+- [Use Case 2 Workflow](#use-case-2-workflow)
   - [Contents](#contents)
     - [Building Blocks](#building-blocks)
     - [Workflows](#workflows)
@@ -21,12 +21,11 @@ This folder contains all needed for the COVID-19 Pilot Workflow.
 
 ### Building Blocks
 
-The ``covid19_BBs`` folder contains the Building Blocks used in the COVID-19
-Workflows.
+The ``uc2_BBs`` folder contains the Building Blocks used in the UC2 Workflow.
 
 ### Workflows
 
-The ``covid19_pilot_workflow`` folder contains the workflows implementations.
+The ``uc2_workflow`` folder contains the workflows implementations.
 
 Currently contains only the implementation using PyCOMPSs.
 
@@ -50,13 +49,13 @@ This section explains the requirements and usage for the COVID19 Pilot workflow 
 #### Usage steps
 
 1. Clone this repository
-2. Install the `covid19_BBs` package
+2. Install the `uc2_BBs` package
 
    ```bash
    cd covid19_BBs && ./install.sh && cd ..
    ```
 
-3. Go to `covid19_pilot_workflow/PyCOMPSs` folder
+3. Go to `uc2_workflow/PyCOMPSs` folder
 4. Execute `./run.sh`
 
 The execution is prepared to use the singularity images that **must** be placed into `resources/images` folder (`MaBoSS.sif`, `PhysiCell-COVID19.sif` and `single_cell.sif`), the assets folder located into `resources/assets` and the dataset located into `resources/data`.
