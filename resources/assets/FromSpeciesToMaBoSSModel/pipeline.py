@@ -7,6 +7,7 @@ DEFAULT_WORK_DIR = "/tmp"
 
 def main(list_genes_file, bnd_file, cfg_file, workdir=DEFAULT_WORK_DIR):
 
+    workdir=os.path.dirname(bnd_file)
     print("Workdir : " + workdir)
     os.makedirs(workdir, exist_ok=True)
     

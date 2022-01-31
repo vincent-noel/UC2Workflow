@@ -6,6 +6,7 @@ export UC2_BB_ASSETS=$(pwd)/../../resources/assets/
 dataset=$(pwd)/../../resources/data/
 results=$(pwd)/../../results/
 
-runcompss -d --python_interpreter=python3 uc2.py \
+
+runcompss --python_interpreter=python3 uc2.py \
     ${dataset}Sub_genes.csv \
     ${results}

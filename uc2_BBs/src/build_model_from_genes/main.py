@@ -7,7 +7,6 @@ from permedcoe import task             # To define task related needs
 # @task supported types
 from permedcoe import FILE_IN          # To define file type and direction
 from permedcoe import FILE_OUT         # To define file type and direction
-from permedcoe import DIRECTORY_OUT    # To define directory type and direction
 # Other permedcoe available functionalities
 from permedcoe import get_environment  # Get variables from invocation (tmpdir, processes, gpus, memory)
 
@@ -30,11 +29,10 @@ def function_name(*args, **kwargs):
 
 @container(engine="SINGULARITY", image=FROM_SPECIES_TO_MABOSS_MODEL_CONTAINER)
 @binary(binary="FromSpeciesToMaBoSSModel.sh")                                        
-@task(input_file=FILE_IN, output_bnd_file=FILE_OUT, output_cfg_file=FILE_OUT, output_dir=DIRECTORY_OUT)
+@task(input_file=FILE_IN, output_bnd_file=FILE_OUT, output_cfg_file=FILE_OUT)
 def build_model_from_species(input_file=None,                    
                         output_bnd_file=None,
-                        output_cfg_file=None,
-                        output_dir=None
+                        output_cfg_file=None
                         ):                     
     # The Definition is equal to:
     #    cp <input_file> <output_file> -v
@@ -62,8 +60,6 @@ def invoke(input, output, config):
     input_file = input[0]
     output_bnd_file = output[0]
     output_cfg_file = output[1]
-    output_dir = output[2]
     build_model_from_species(input_file=input_file,
                         output_bnd_file=output_bnd_file,
-                        output_cfg_file=output_cfg_file,
-                        output_dir=output_dir)
+                        output_cfg_file=output_cfg_file)

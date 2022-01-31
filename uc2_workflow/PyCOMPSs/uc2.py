@@ -22,7 +22,6 @@ from helpers import get_genefiles
 from pycompss.api.api import compss_wait_on_directory
 from pycompss.api.api import compss_wait_on_file
 
-
 def main():
     """
     MAIN CODE
@@ -37,6 +36,9 @@ def main():
     # GET INPUT PARAMETERS
     args = parse_input_parameters()
 
+    if not os.path.exists(args.data_folder):
+        os.makedirs(args.data_folder, exist_ok=True)
+
     # GENE CANDIDATES
     if os.path.exists(args.list_genes):
         print("List of genes file provided")
@@ -44,27 +46,10 @@ def main():
         model_bnd_path = os.path.join(args.data_folder, "model.bnd")
         model_cfg_path = os.path.join(args.data_folder, "model.cfg")
 
-        print(model_bnd_path)
-        print(os.path.exists(model_bnd_path))
-        print(model_cfg_path)
-        print(os.path.exists(model_cfg_path))
-
         build_model_from_species(
-            args.list_genes, model_bnd_path, model_cfg_path, args.data_folder)
+            args.list_genes, model_bnd_path, model_cfg_path)#, args.data_folder)
 
-        print(model_bnd_path)
-        print(os.path.exists(model_bnd_path))
-        print(model_cfg_path)
-        print(os.path.exists(model_cfg_path))
-
-        # MaBoSS_analysis(args.model, args.data_folder, args.ko_file)
         compss_wait_on_file(model_bnd_path)
-
-        print("Model created !!!!!")
-        print(model_bnd_path)
-        print(os.path.exists(model_bnd_path))
-        print(model_cfg_path)
-        print(os.path.exists(model_cfg_path))
 
     # # Discover gene candidates
     # genes = [""]  # first empty since it is the original without gene ko

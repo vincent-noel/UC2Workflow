@@ -32,6 +32,8 @@ def parse_input_parameters(show=True):
     """
     parser = create_parser()
     args = parser.parse_args()
+    args.list_genes = os.path.realpath(args.list_genes)
+    args.data_folder = os.path.realpath(args.data_folder)
     if show:
         print()
         print(">>> WELCOME TO THE PILOT WORKFLOW")
