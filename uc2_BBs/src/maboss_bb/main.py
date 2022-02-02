@@ -12,6 +12,7 @@ from uc2_BBs_commons.assets import MABOSS_ASSETS
 
 # Globals
 MABOSS_BINARY = os.path.join(MABOSS_ASSETS, "MaBoSS_analysis.sh")
+MABOSS_SENSITIVIY_ANALYSIS = os.path.join(MABOSS_ASSETS, "MaBoSS_sensitivity_analysis.sh")
 
 
 @container(engine="SINGULARITY", image=MABOSS_CONTAINER)
@@ -29,6 +30,24 @@ def MaBoSS_analysis(model="epithelial_cell_2",
     """
     # Empty function since it represents a binary execution:
     pass
+
+
+@container(engine="SINGULARITY", image=MABOSS_CONTAINER)
+@binary(binary=MABOSS_SENSITIVIY_ANALYSIS)
+@task(data_folder=DIRECTORY_IN, ko_file=FILE_OUT)
+def MaBoSS_analysis(model="epithelial_cell_2",
+                    data_folder=None,
+                    ko_file=None):
+    """
+    Performs the MaBoSS analysis.
+    Produces the ko file, containing the set of selected gene candidates.
+
+    The Definition is equal to:
+        ./MaBoSS_analysis.sh <model> <data_folder> <ko_file>
+    """
+    # Empty function since it represents a binary execution:
+    pass
+
 
 
 def invoke(input, output, config):

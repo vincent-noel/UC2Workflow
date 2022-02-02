@@ -11,7 +11,7 @@ from permedcoe.utils.log import LOG_LEVEL_DEBUG, init_logging
 from build_model_from_genes import build_model_from_species
 from maboss_bb import MaBoSS_analysis
 # from single_cell_processing import single_cell_processing
-from personalize_patient import personalize_patient
+from personalize_patient import personalize_patient, personalize_patient_cellline
 # from physiboss import physiboss_model
 # from meta_analysis import meta_analysis
 # Import utils
@@ -42,14 +42,32 @@ def main():
     # GENE CANDIDATES
     if os.path.exists(args.list_genes):
         print("List of genes file provided")
-
-        model_bnd_path = os.path.join(args.data_folder, "model.bnd")
-        model_cfg_path = os.path.join(args.data_folder, "model.cfg")
+        
+        os.makedirs(os.path.join(args.data_folder, "build_model"), exist_ok=True)
+        model_bnd_path = os.path.join(args.data_folder, "build_model", "model.bnd")
+        model_cfg_path = os.path.join(args.data_folder, "build_model", "model.cfg")
 
         build_model_from_species(
-            args.list_genes, model_bnd_path, model_cfg_path)#, args.data_folder)
+            input_file=args.list_genes, 
+            output_bnd_file=model_bnd_path, 
+            output_cfg_file=model_cfg_path
+        )
 
         compss_wait_on_file(model_bnd_path)
+        compss_wait_on_file(model_cfg_path)
+
+        os.makedirs(os.path.join(args.data_folder, "personalize_patient"), exist_ok=True)
+        os.makedirs(os.path.join(args.data_folder, "personalize_patient", "SIDM00003"), exist_ok=True)
+
+        personalize_patient_cellline(expression_data=args.rnaseq_data,
+                cnv_data=args.cn_data, mutation_data=args.mutation_data,
+                model_prefix=os.path.dirname(model_bnd_path), t="SIDM00003",
+                model_output_dir=os.path.join(args.data_folder, "personalize_patient", "SIDM00003")
+                # personalized_result=os.path.join(args.data_folder, "personalize_patient", "SIDM00003", "personalized_by_celltype.tsv"),
+        )
+        
+        compss_wait_on_file(model_bnd_path)
+
 
     # # Discover gene candidates
     # genes = [""]  # first empty since it is the original without gene ko

@@ -94,8 +94,12 @@ all_nodes <- names(model)
 # all_nodes <- unique(c(all_nodes, complex_units))
 
 subset <- data.matrix(dat[rownames(dat) %in% all_nodes,])
+print("Size subset")
+dim(subset)
 
+print("Criteria")
 criteria <- compute_criteria(t(data.matrix(subset)))
+
 table(criteria$Category)
 
 # DEBUG

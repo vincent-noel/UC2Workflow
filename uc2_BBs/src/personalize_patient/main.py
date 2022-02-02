@@ -5,6 +5,7 @@ from permedcoe import binary
 from permedcoe import task
 from permedcoe import FILE_IN
 from permedcoe import FILE_OUT
+from permedcoe import DIRECTORY_IN
 from permedcoe import DIRECTORY_OUT
 
 # Import single container and assets definitions
@@ -14,7 +15,8 @@ from uc2_BBs_commons.assets import PERSONALIZE_PATIENT_ASSETS
 # Globals
 PERSONALIZE_PATIENT_BINARY = os.path.join(PERSONALIZE_PATIENT_ASSETS,
                                           "personalize_patient.sh")
-
+PERSONALIZE_CELLLINE_BINARY_UC2 = os.path.join(PERSONALIZE_PATIENT_ASSETS,
+                                          "personalize_cellline.sh")
 
 @container(engine="SINGULARITY", image=PERSONALIZE_PATIENT_CONTAINER)
 @binary(binary=PERSONALIZE_PATIENT_BINARY)
@@ -49,6 +51,36 @@ def personalize_patient(norm_data_flag="-e", norm_data=None,
     pass
 
 
+@container(engine="SINGULARITY", image=PERSONALIZE_PATIENT_CONTAINER)
+@binary(binary=PERSONALIZE_CELLLINE_BINARY_UC2)
+@task(expression_data=FILE_IN, cnv_data=FILE_IN, mutation_data=FILE_IN, model_prefix=DIRECTORY_IN, model_output_dir=DIRECTORY_OUT)
+def personalize_patient_cellline(expression_data_flag="-e", expression_data=None,
+                        cnv_data_flag="-c", cnv_data=None,
+                        mutation_data_flag="-m", mutation_data=None,
+                        model_prefix_flag="-b", model_prefix=None,
+                        t_flag="-t", t="Epithelial_cells",
+                        model_output_flag="-o", model_output_dir=None,
+                        # personalized_result_flag="-p", personalized_result=None
+                        ):
+    """
+    Performs the personalize patient.
+
+    The Definition is equal to:
+       ./personalize_patient.sh \
+       -e <expression> \
+       -c <cells> \
+       -m <model_prefix> -t <t> \
+    #    -o <model_output_dir> -p <personalization_result> \
+    Sample:
+       ./personalize_patient.sh \
+       -e $outdir/$sample/norm_data.tsv \
+       -c $outdir/$sample/cells_metadata.tsv \
+       -m $model_prefix -t Epithelial_cells \
+    #    -o $outdir/$sample/models -p $outdir/$sample/personalized_by_cell_type.tsv \
+    """
+    # Empty function since it represents a binary execution:
+    pass
+
 def invoke(input, output, config):
     """ Common interface.
 
@@ -60,16 +92,39 @@ def invoke(input, output, config):
     Returns:
         None
     """
-    # Process parameters
-    norm_data = input[0]
-    cells = input[1]
-    model_prefix = input[2]
-    t = input[3]
-    ko = input[4]
-    model_output_dir = output[0]
-    personalized_result = output[1]
-    # Building block invocation
-    personalize_patient(norm_data=norm_data,
+    
+    if ("uc2" in config.keys() and config["uc2"]):
+        print(" We detected uc2 config ! Yeah !")
+        
+        expression = input[0]
+        cnv = input[1]
+        mutation = input[2]
+        cell_type = input[3]
+        model = input[4]
+        
+        model_output_dir = output[0]
+        # personalized_result = output[1]
+        
+        personalize_patient_cellline(expression_data=expression,
+                        cnv_data=cnv,
+                        mutation_data=mutation,
+                        model_prefix=model,
+                        t=cell_type,
+                        model_output_dir=model_output_dir)
+                        # personalized_result=personalized_result)
+
+        
+    else:
+        # Process parameters
+        norm_data = input[0]
+        cells = input[1]
+        model_prefix = input[2]
+        t = input[3]
+        ko = input[4]
+        model_output_dir = output[0]
+        personalized_result = output[1]
+        # Building block invocation
+        personalize_patient(norm_data=norm_data,
                         cells=cells,
                         model_prefix=model_prefix,
                         t=t,

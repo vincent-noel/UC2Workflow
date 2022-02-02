@@ -62,12 +62,17 @@ def main(list_genes_file, bnd_file, cfg_file, workdir=DEFAULT_WORK_DIR):
     pf.write_bnet(subg2, connected_dict, name=os.path.join(workdir, "model.bnet"))
 
     model = maboss.loadBNet(os.path.join(workdir, "model.bnet"))
-    with (open(bnd_file, "w") as bnd_file, open(cfg_file, "w") as cfg_file):
+    for node in model.network:
+        model.network[node].set_rate("$u_" + str(node), "$d_" + str(node))
+    
+    with open(bnd_file, "w") as bnd_file:
         model.print_bnd(bnd_file)
+        
+    with open(cfg_file, "w") as cfg_file:
         model.print_cfg(cfg_file)
         
-    # shutil.rmtree(os.path.join(workdir, "cache"))
-    # shutil.rmtree(os.path.join(workdir, "pypath_log"))
+    shutil.rmtree(os.path.join(workdir, "cache"))
+    shutil.rmtree(os.path.join(workdir, "pypath_log"))
     
 if __name__ == '__main__':
     sys.exit(main(*sys.argv[1:]))  # next section explains the use of sys.exit
