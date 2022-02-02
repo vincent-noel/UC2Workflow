@@ -1,4 +1,5 @@
 /home/vincent/.local/bin/build_model_from_genes
 /home/vincent/.local/bin/maboss_bb
 /home/vincent/.local/bin/personalize_patient
+/home/vincent/.local/bin/print_drug_results
 /home/vincent/.local/lib/python3.9/site-packages/uc2_BBs-0.0.1-py3.9.egg

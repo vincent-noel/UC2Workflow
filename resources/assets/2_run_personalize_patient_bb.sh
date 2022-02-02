@@ -5,21 +5,23 @@ export UC2_BB_ASSETS=$(pwd)/
 
 data=$(pwd)/../data
 results=$(pwd)/../../results
+mod_results=${results}/build_model
+per_results=${results}/personalize_patient
 
 # Data is too big for github, so I compressed it. Need to uncompress first
 tar -zxvf ${data}/data_celllines.tar.gz --directory ${data}
 
 # 1st cell line
 cell_line=SIDM00003
-mkdir -p ${results}/personalize_patient/${cell_line}/
+mkdir -p ${per_results}/${cell_line}/
 
 personalize_patient -d \
     -i ${data}/rnaseq_fpkm_20191101.csv \
        ${data}/mutations_20191101.csv.csv \
        ${data}/cnv_gistic_20191101.csv \
        ${cell_line} \
-       ${results}/build_model/ \
-    -o ${results}/personalize_patient/${cell_line}/ \
+       ${mod_results}/ \
+    -o ${per_results}/${cell_line}/ \
     -c ${data}/personalization.yml \
     --mount_points ${UC2_BB_ASSETS}/personalize_patient/:${UC2_BB_ASSETS}/personalize_patient/,$(pwd)/../data/:$(pwd)/../data/
 
@@ -27,15 +29,15 @@ personalize_patient -d \
 
 cell_line=SIDM00023
 
-mkdir -p ${results}/personalize_patient/${cell_line}/
+mkdir -p ${per_results}/${cell_line}/
 
 personalize_patient -d \
     -i ${data}/rnaseq_fpkm_20191101.csv \
        ${data}/mutations_20191101.csv.csv \
        ${data}/cnv_gistic_20191101.csv \
        ${cell_line} \
-       ${results}/build_model/ \
-    -o ${results}/personalize_patient/${cell_line}/ \
+       ${mod_results}/ \
+    -o ${per_results}/${cell_line}/ \
     -c ${data}/personalization.yml \
     --mount_points ${UC2_BB_ASSETS}/personalize_patient/:${UC2_BB_ASSETS}/personalize_patient/,$(pwd)/../data/:$(pwd)/../data/
 
@@ -44,14 +46,14 @@ personalize_patient -d \
 
 cell_line=SIDM00040
 
-mkdir -p ${results}/personalize_patient/${cell_line}/
+mkdir -p ${per_results}/${cell_line}/
 
 personalize_patient -d \
     -i ${data}/rnaseq_fpkm_20191101.csv \
        ${data}/mutations_20191101.csv.csv \
        ${data}/cnv_gistic_20191101.csv \
        ${cell_line} \
-       ${results}/build_model/ \
-    -o ${results}/personalize_patient/${cell_line}/ \
+       ${mod_results}/ \
+    -o ${per_results}/${cell_line}/ \
     -c ${data}/personalization.yml \
     --mount_points ${UC2_BB_ASSETS}/personalize_patient/:${UC2_BB_ASSETS}/personalize_patient/,$(pwd)/../data/:$(pwd)/../data/

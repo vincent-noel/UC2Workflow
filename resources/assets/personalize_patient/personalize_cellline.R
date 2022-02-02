@@ -121,8 +121,8 @@ model_outdirs <- opt$model_outdir
 # dir.create(model_outdirs)
 
 # wt
-out_model_pref <- paste0(model_outdirs, "/", basename(opt$model_prefix), "_personalized")
+out_model_pref <- paste0(model_outdirs, "/model")
 save_config(cfg2, filename=paste0(out_model_pref,".cfg"))
-file.copy(from=paste0(opt$model_prefix, ".bnd"), to=paste0(out_model_pref,".bnd"))
+file.copy(from=paste0(opt$model_prefix, "model.bnd"), to=paste0(out_model_pref,".bnd"))
 
 cat("\n\n[finished]\n\n")

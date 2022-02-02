@@ -3,14 +3,18 @@ From: ubuntu
 Stage: build
 
 %environment
-    export PATH="/usr/local/bin:/usr/local/bin/MaBoSS/:/usr/local/bin/MaBoSS/MaBoSS_analysis:$PATH"
+    export PATH="/usr/local/bin:/usr/local/bin/MaBoSS_BB/:$PATH"
 
 %post
     DEBIAN_FRONTEND=noninteractive apt-get update -y
-    DEBIAN_FRONTEND=noninteractive apt-get install -y r-base default-jre
-
+    DEBIAN_FRONTEND=noninteractive apt-get install -y r-base default-jre python3 python3-pip wget unzip
+    pip install maboss
+    wget https://github.com/sysbio-curie/MaBoSS-env-2.0/releases/download/v2.4.1/MaBoSS-linux64.zip 
+    unzip -o MaBoSS-linux64.zip -d /usr/local/bin/
+    ls -al /usr/local/bin
+    
 %files
-    assets/MaBoSS /usr/local/bin
+    assets/MaBoSS_BB /usr/local/bin
 
 %runscript
     exec /bin/bash "$@"

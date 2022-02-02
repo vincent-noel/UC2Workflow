@@ -94,8 +94,7 @@ def invoke(input, output, config):
     """
     
     if ("uc2" in config.keys() and config["uc2"]):
-        print(" We detected uc2 config ! Yeah !")
-        
+    
         expression = input[0]
         cnv = input[1]
         mutation = input[2]
