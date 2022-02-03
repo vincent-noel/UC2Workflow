@@ -1,19 +1,16 @@
 #!/usr/bin/python3
 
 import os
-import csv
-from re import A
 
 # To set building block debug mode
 from permedcoe import set_debug
-from permedcoe.utils.log import LOG_LEVEL_DEBUG, init_logging
 # Import building block tasks
 from build_model_from_genes import build_model_from_species
+from personalize_patient import personalize_patient
+from personalize_patient import personalize_patient_cellline
 from maboss_bb import MaBoSS_analysis
-# from single_cell_processing import single_cell_processing
-from personalize_patient import personalize_patient, personalize_patient_cellline
-# from physiboss import physiboss_model
-# from meta_analysis import meta_analysis
+from maboss_bb import MaBoSS_sensitivity_analysis
+from print_drug_results import print_drug_results
 # Import utils
 from utils import parse_input_parameters
 from helpers import get_genefiles
@@ -21,14 +18,14 @@ from helpers import get_genefiles
 # PyCOMPSs imports
 from pycompss.api.api import compss_wait_on_directory
 from pycompss.api.api import compss_wait_on_file
+from pycompss.api.api import compss_barrier
 
 def main():
     """
     MAIN CODE
     """
     set_debug(True)
-    # init_logging(True)
-    
+
     print("---------------------------")
     print("|   Use Case 2 Workflow   |")
     print("---------------------------")
@@ -36,133 +33,52 @@ def main():
     # GET INPUT PARAMETERS
     args = parse_input_parameters()
 
-    if not os.path.exists(args.data_folder):
-        os.makedirs(args.data_folder, exist_ok=True)
+    if not os.path.exists(args.results_folder):
+        os.makedirs(args.results_folder, exist_ok=True)
 
-    # GENE CANDIDATES
-    if os.path.exists(args.list_genes):
-        print("List of genes file provided")
-        
-        os.makedirs(os.path.join(args.data_folder, "build_model"), exist_ok=True)
-        model_bnd_path = os.path.join(args.data_folder, "build_model", "model.bnd")
-        model_cfg_path = os.path.join(args.data_folder, "build_model", "model.cfg")
+    # 1st STEP: Build model from species
+    build_model_folder = os.path.join(args.results_folder, "build_model")
+    os.makedirs(build_model_folder, exist_ok=True)
+    model_bnd_path = os.path.join(build_model_folder, "model.bnd")
+    model_cfg_path = os.path.join(build_model_folder, "model.cfg")
 
-        build_model_from_species(
-            input_file=args.list_genes, 
-            output_bnd_file=model_bnd_path, 
-            output_cfg_file=model_cfg_path
+    build_model_from_species(
+        input_file=args.list_genes,
+        output_bnd_file=model_bnd_path,
+        output_cfg_file=model_cfg_path
+    )
+
+    cell_lines = ["SIDM00003", "SIDM00023", "SIDM00040"]  # TODO: get this list from cnv_gistic_20191101.csv
+    personalize_patient_folder = os.path.join(args.results_folder, "personalize_patient")
+    os.makedirs(personalize_patient_folder, exist_ok=True)
+    mutant_results_folder = os.path.join(args.results_folder, "mutant_results")
+    os.makedirs(mutant_results_folder, exist_ok=True)
+    for cell_line in cell_lines:
+
+        # 2nd STEP: Personalize patients
+        personalize_patient_folder_cell = os.path.join(personalize_patient_folder, cell_line)
+        os.makedirs(personalize_patient_folder_cell, exist_ok=True)
+        personalize_patient_cellline(
+            expression_data=args.rnaseq_data,
+            cnv_data=args.cn_data,
+            mutation_data=args.mutation_data,
+            model_bnd=model_bnd_path,
+            model_cfg=model_cfg_path,
+            t=cell_line,
+            model_output_dir=personalize_patient_folder_cell
         )
 
-        compss_wait_on_file(model_bnd_path)
-        compss_wait_on_file(model_cfg_path)
-
-        os.makedirs(os.path.join(args.data_folder, "personalize_patient"), exist_ok=True)
-        os.makedirs(os.path.join(args.data_folder, "personalize_patient", "SIDM00003"), exist_ok=True)
-
-        personalize_patient_cellline(expression_data=args.rnaseq_data,
-                cnv_data=args.cn_data, mutation_data=args.mutation_data,
-                model_prefix=os.path.dirname(model_bnd_path), t="SIDM00003",
-                model_output_dir=os.path.join(args.data_folder, "personalize_patient", "SIDM00003")
-                # personalized_result=os.path.join(args.data_folder, "personalize_patient", "SIDM00003", "personalized_by_celltype.tsv"),
+        # 3rd STEP: MaBoSS
+        mutant_results_folder_cell = os.path.join(mutant_results_folder, cell_line)
+        os.makedirs(mutant_results_folder_cell, exist_ok=True)
+        MaBoSS_sensitivity_analysis(
+            model_folder=personalize_patient_folder_cell,
+            genes_druggable=args.genes_drugs,
+            genes_target=args.state_objective,
+            result_folder=mutant_results_folder_cell
         )
-        
-        compss_wait_on_file(model_bnd_path)
 
-
-    # # Discover gene candidates
-    # genes = [""]  # first empty since it is the original without gene ko
-    # with open(args.ko_file, "r") as ko_fd:
-    #     genes += ko_fd.read().splitlines()
-    # genefiles = get_genefiles(args.model, genes)
-
-    # # Iterate over the metadata file processing each patient
-    # physiboss_results = []
-    # physiboss_subfolder = "physiboss_results"  # do not modify (hardcoded in meta-analysis)
-    # with open(args.metadata, "r") as metadata_fd:
-    #     reader = csv.DictReader(metadata_fd, delimiter="\t")
-    #     for line in reader:
-    #         # ONE LINE PER PATIENT
-    #         sample = line["id"]
-    #         # SINGLE CELL PROCESSING
-    #         print("> SINGLE CELL PROCESSING %s" % sample)
-    #         sample_out_dir = os.path.join(args.outdir, sample)
-    #         scp_dir = os.path.join(sample_out_dir, "single_cell_processing", "results")
-    #         os.makedirs(scp_dir)
-    #         scp_images_dir = os.path.join(sample_out_dir, "single_cell_processing", "images")
-    #         os.makedirs(scp_images_dir)
-    #         norm_data = os.path.join(scp_dir, "norm_data.tsv")
-    #         raw_data = os.path.join(scp_dir, "raw_data.tsv")
-    #         scaled_data = os.path.join(scp_dir, "scaled_data.tsv")
-    #         cells_metadata = os.path.join(scp_dir, "cells_metadata.tsv")
-    #         if line["file"].startswith("../.."):
-    #             # Two folder relative - Local
-    #             relative_p_file = os.path.join(*(line["file"].split(os.path.sep)[2:]))  # remove first two folders "../.."
-    #             p_file = os.path.join("..", "..", "resources", relative_p_file)
-    #         else:
-    #             # Absolute path - Supercomputer
-    #             p_file = line["file"]
-    #         single_cell_processing(p_id=sample,
-    #                                p_group=line["group"],
-    #                                p_file=p_file,
-    #                                norm_data=norm_data,
-    #                                raw_data=raw_data,
-    #                                scaled_data=scaled_data,
-    #                                cells_metadata=cells_metadata,
-    #                                outdir=scp_images_dir)
-
-    #         # PERSONALIZE PATIENT
-    #         print("> PERSONALIZING PATIENT %s" % sample)
-    #         pp_dir = os.path.join(sample_out_dir, "personalize_patient")
-    #         os.makedirs(pp_dir)
-    #         model_output_dir = os.path.join(pp_dir, "models")
-    #         personalized_result = os.path.join(pp_dir, "personalized_by_cell_type.tsv")
-    #         personalize_patient(norm_data=norm_data,
-    #                             cells=cells_metadata,
-    #                             model_prefix=args.model_prefix,
-    #                             t="Epithelial_cells",
-    #                             model_output_dir=model_output_dir,
-    #                             personalized_result=personalized_result,
-    #                             ko=args.ko_file)
-
-    #         for gene_prefix in genefiles:
-    #             print(">> prefix: " + str(gene_prefix))
-    #             for r in range(1, args.reps + 1):
-    #                 print(">>> Repetition: " + str(r))
-    #                 name = "output_" + sample + "_" + gene_prefix + "_" + str(r)
-    #                 out_file = os.path.join(args.outdir, sample, physiboss_subfolder, name + ".out")
-    #                 err_file = os.path.join(args.outdir, sample, physiboss_subfolder, name + ".err")
-    #                 print("\t- " + out_file)
-    #                 print("\t- " + err_file)
-    #                 results_dir = os.path.join(args.outdir, sample, physiboss_subfolder, gene_prefix + "_physiboss_run_" + str(r))
-    #                 os.makedirs(results_dir)
-    #                 physiboss_results.append(results_dir)
-    #                 # PHYSIBOSS
-    #                 physiboss_model(sample=sample,
-    #                                 repetition=r,
-    #                                 prefix=gene_prefix,
-    #                                 model_dir=model_output_dir,
-    #                                 out_file=out_file,
-    #                                 err_file=err_file,
-    #                                 results_dir=results_dir)
-
-    # # Wait for all physiboss
-    # # Currently needed because the meta analysis requires all of them
-    # # and its input is the main folder. It assumes the internal folder
-    # # structure
-    # for physiboss_result in physiboss_results:
-    #     compss_wait_on_directory(physiboss_result)
-
-    # # Perform last step: meta analysis
-    # final_result_dir = os.path.join(args.outdir, "meta_analysis")
-    # os.makedirs(final_result_dir)
-    # # META-ANALYSIS
-    # meta_analysis(meta_file=args.metadata,
-    #               out_dir=args.outdir,
-    #               model_prefix=args.model,
-    #               ko_file=args.ko_file,
-    #               reps=args.reps,
-    #               verbose="T",
-    #               results=final_result_dir)
+    compss_barrier()
 
 
 if __name__ == "__main__":
