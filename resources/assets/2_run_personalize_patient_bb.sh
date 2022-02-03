@@ -20,7 +20,8 @@ personalize_patient -d \
        ${data}/mutations_20191101.csv.csv \
        ${data}/cnv_gistic_20191101.csv \
        ${cell_line} \
-       ${mod_results}/ \
+       ${mod_results}/model.bnd \
+       ${mod_results}/model.cfg \
     -o ${per_results}/${cell_line}/ \
     -c ${data}/personalization.yml \
     --mount_points ${UC2_BB_ASSETS}/personalize_patient/:${UC2_BB_ASSETS}/personalize_patient/,$(pwd)/../data/:$(pwd)/../data/
@@ -36,7 +37,8 @@ personalize_patient -d \
        ${data}/mutations_20191101.csv.csv \
        ${data}/cnv_gistic_20191101.csv \
        ${cell_line} \
-       ${mod_results}/ \
+       ${mod_results}/model.bnd \
+       ${mod_results}/model.cfg \
     -o ${per_results}/${cell_line}/ \
     -c ${data}/personalization.yml \
     --mount_points ${UC2_BB_ASSETS}/personalize_patient/:${UC2_BB_ASSETS}/personalize_patient/,$(pwd)/../data/:$(pwd)/../data/
@@ -53,7 +55,8 @@ personalize_patient -d \
        ${data}/mutations_20191101.csv.csv \
        ${data}/cnv_gistic_20191101.csv \
        ${cell_line} \
-       ${mod_results}/ \
+       ${mod_results}/model.bnd \
+       ${mod_results}/model.cfg \
     -o ${per_results}/${cell_line}/ \
     -c ${data}/personalization.yml \
     --mount_points ${UC2_BB_ASSETS}/personalize_patient/:${UC2_BB_ASSETS}/personalize_patient/,$(pwd)/../data/:$(pwd)/../data/

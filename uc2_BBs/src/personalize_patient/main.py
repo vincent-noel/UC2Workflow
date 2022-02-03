@@ -53,11 +53,12 @@ def personalize_patient(norm_data_flag="-e", norm_data=None,
 
 @container(engine="SINGULARITY", image=PERSONALIZE_PATIENT_CONTAINER)
 @binary(binary=PERSONALIZE_CELLLINE_BINARY_UC2)
-@task(expression_data=FILE_IN, cnv_data=FILE_IN, mutation_data=FILE_IN, model_prefix=DIRECTORY_IN, model_output_dir=DIRECTORY_OUT)
+@task(expression_data=FILE_IN, cnv_data=FILE_IN, mutation_data=FILE_IN, model_bnd=FILE_IN, model_cfg=FILE_IN, model_output_dir=DIRECTORY_OUT)
 def personalize_patient_cellline(expression_data_flag="-e", expression_data=None,
                         cnv_data_flag="-c", cnv_data=None,
                         mutation_data_flag="-m", mutation_data=None,
-                        model_prefix_flag="-b", model_prefix=None,
+                        model_bnd_flag="-x", model_bnd=None,
+                        model_cfg_flag="-y", model_cfg=None,
                         t_flag="-t", t="Epithelial_cells",
                         model_output_flag="-o", model_output_dir=None,
                         # personalized_result_flag="-p", personalized_result=None
@@ -92,27 +93,29 @@ def invoke(input, output, config):
     Returns:
         None
     """
-    
+
     if ("uc2" in config.keys() and config["uc2"]):
-    
+
         expression = input[0]
         cnv = input[1]
         mutation = input[2]
         cell_type = input[3]
-        model = input[4]
-        
+        model_bnd = input[4]
+        model_cfg = input[5]
+
         model_output_dir = output[0]
         # personalized_result = output[1]
-        
+
         personalize_patient_cellline(expression_data=expression,
                         cnv_data=cnv,
                         mutation_data=mutation,
-                        model_prefix=model,
+                        model_bnd=model_bnd,
+                        model_cfg=model_cfg,
                         t=cell_type,
                         model_output_dir=model_output_dir)
                         # personalized_result=personalized_result)
 
-        
+
     else:
         # Process parameters
         norm_data = input[0]

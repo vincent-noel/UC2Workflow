@@ -1,2 +1,9 @@
 #!/usr/bin/env bash
-python3 ./MaBoSS_BB/sensitivity_analysis.py $@
+
+CURRENT_DIR=$(pwd)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+cd ${SCRIPT_DIR}
+
+python3 sensitivity_analysis.py $@
+
+cd ${CURRENT_DIR}
