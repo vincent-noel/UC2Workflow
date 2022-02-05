@@ -15,7 +15,7 @@ parser.add_argument("list_druggable", type=str,
 parser.add_argument("nodes_quantify", type=str,
                     help="File with list of nodes to quantify")
 
-parser.add_argument("path_results", type=str,
+parser.add_argument("results_file", type=str,
                     help="RNASeq data for personalization")
 
 parser.add_argument("--mode", type=str, default="double", required=False,
@@ -26,7 +26,7 @@ args = parser.parse_args()
 args.path_models = os.path.realpath(args.path_models)
 args.list_druggable = os.path.realpath(args.list_druggable)
 args.nodes_quantify = os.path.realpath(args.nodes_quantify)
-args.path_results = os.path.realpath(args.path_results)
+args.results_file = os.path.realpath(args.results_file)
 
 print("Model path : %s" % args.path_models)
 
@@ -94,7 +94,5 @@ elif args.mode == "double":
 
 
 print(res_simple)
-if not os.path.exists(args.path_results):
-    os.makedirs(args.path_results, exist_ok=True)
-with open(os.path.join(args.path_results, "sensitivity.json"), "w") as t_file:
+with open(args.results_file, "w") as t_file:
     t_file.write(json.dumps(res_simple))

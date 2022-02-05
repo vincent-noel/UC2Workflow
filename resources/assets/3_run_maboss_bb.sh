@@ -16,7 +16,7 @@ maboss_bb -d \
     -i ${per_results}/SIDM00003/ \
        ${data}/genes_druggable.csv \
        ${data}/genes_target.csv \
-    -o ${mut_results}/SIDM00003/ \
+    -o ${mut_results}/SIDM00003/sensitivity.json \
     -c ${data}/personalization.yml \
     --mount_points ${UC2_BB_ASSETS}/MaBoSS_BB/:${UC2_BB_ASSETS}/MaBoSS_BB/
 
@@ -26,7 +26,7 @@ maboss_bb -d \
     -i ${per_results}/SIDM00023/ \
        ${data}/genes_druggable.csv \
        ${data}/genes_target.csv \
-    -o ${mut_results}/SIDM00023/ \
+    -o ${mut_results}/SIDM00023/sensitivity.json \
     -c ${data}/personalization.yml \
     --mount_points ${UC2_BB_ASSETS}/MaBoSS_BB/:${UC2_BB_ASSETS}/MaBoSS_BB/
 
@@ -36,6 +36,6 @@ maboss_bb -d \
     -i ${per_results}/SIDM00040/ \
        ${data}/genes_druggable.csv \
        ${data}/genes_target.csv \
-    -o ${mut_results}/SIDM00040/ \
+    -o ${mut_results}/SIDM00040/sensitivity.json \
     -c ${data}/personalization.yml \
     --mount_points ${UC2_BB_ASSETS}/MaBoSS_BB/:${UC2_BB_ASSETS}/MaBoSS_BB/

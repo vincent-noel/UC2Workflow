@@ -12,7 +12,7 @@ fi
 mkdir -p $results
 
 
-runcompss -d -g --python_interpreter=python3 uc2.py \
+runcompss -d --python_interpreter=python3 uc2.py \
     ${dataset}/Sub_genes.csv \
     ${dataset}/rnaseq_fpkm_20191101.csv \
     ${dataset}/mutations_20191101.csv \

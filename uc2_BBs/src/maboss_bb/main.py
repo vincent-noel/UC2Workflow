@@ -36,11 +36,11 @@ def MaBoSS_analysis(model="epithelial_cell_2",
 
 @container(engine="SINGULARITY", image=MABOSS_CONTAINER)
 @binary(binary=MABOSS_SENSITIVIY_ANALYSIS)
-@task(model_folder=DIRECTORY_IN, genes_druggable=FILE_IN, genes_target=FILE_IN, result_folder=DIRECTORY_OUT)
+@task(model_folder=DIRECTORY_IN, genes_druggable=FILE_IN, genes_target=FILE_IN, result_file=FILE_OUT)
 def MaBoSS_sensitivity_analysis(model_folder=None,
                                 genes_druggable=None,
                                 genes_target=None,
-                                result_folder=None):
+                                result_file=None):
     """
     Performs the MaBoSS analysis.
     Produces the ko file, containing the set of selected gene candidates.
@@ -63,19 +63,18 @@ def invoke(input, output, config):
     Returns:
         None
     """
-    
+
     if ("uc2" in config.keys() and config["uc2"]):
-        
         # Process parameters
         model_folder = input[0]
         genes_druggable = input[1]
         genes_target = input[2]
-        result_folder = output[0]
+        result_file = output[0]
         # Building block invokation
         MaBoSS_sensitivity_analysis(model_folder=model_folder,
                         genes_druggable=genes_druggable,
                         genes_target=genes_target,
-                        result_folder=result_folder)
+                        result_file=result_file)
 
     else:
         # Process parameters

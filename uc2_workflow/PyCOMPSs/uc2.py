@@ -10,7 +10,7 @@ from personalize_patient import personalize_patient
 from personalize_patient import personalize_patient_cellline
 from maboss_bb import MaBoSS_analysis
 from maboss_bb import MaBoSS_sensitivity_analysis
-from print_drug_results import print_drug_results
+from print_drug_results import print_drug_results_parallelized
 # Import utils
 from utils import parse_input_parameters
 from helpers import get_genefiles
@@ -48,11 +48,12 @@ def main():
         output_cfg_file=model_cfg_path
     )
 
-    cell_lines = ["SIDM00003", "SIDM00023", "SIDM00040"]  # TODO: get this list from cnv_gistic_20191101.csv
+    cell_lines = ["SIDM00003", "SIDM00023"] #, "SIDM00040", "SIDM00041"]  # TODO: get this list from rnasec csv
     personalize_patient_folder = os.path.join(args.results_folder, "personalize_patient")
     os.makedirs(personalize_patient_folder, exist_ok=True)
     mutant_results_folder = os.path.join(args.results_folder, "mutant_results")
     os.makedirs(mutant_results_folder, exist_ok=True)
+    results_files = []
     for cell_line in cell_lines:
 
         # 2nd STEP: Personalize patients
@@ -71,12 +72,18 @@ def main():
         # 3rd STEP: MaBoSS
         mutant_results_folder_cell = os.path.join(mutant_results_folder, cell_line)
         os.makedirs(mutant_results_folder_cell, exist_ok=True)
+        mutant_results_file = os.path.join(mutant_results_folder_cell, "sensitivity.json")
         MaBoSS_sensitivity_analysis(
             model_folder=personalize_patient_folder_cell,
             genes_druggable=args.genes_drugs,
             genes_target=args.state_objective,
-            result_folder=mutant_results_folder_cell
+            result_file=mutant_results_file
         )
+        results_files.append(mutant_results_file)
+
+    report_folder = os.path.join(args.results_folder, "report")
+    os.makedirs(report_folder, exist_ok=True)
+    print_drug_results_parallelized(cell_lines, results_files, report_folder)
 
     compss_barrier()
 
