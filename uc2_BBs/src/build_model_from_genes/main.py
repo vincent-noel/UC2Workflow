@@ -29,15 +29,31 @@ def function_name(*args, **kwargs):
 
 @container(engine="SINGULARITY", image=FROM_SPECIES_TO_MABOSS_MODEL_CONTAINER)
 @binary(binary="FromSpeciesToMaBoSSModel.sh")                                        
-@task(input_file=FILE_IN, output_bnd_file=FILE_OUT, output_cfg_file=FILE_OUT)
-def build_model_from_species(input_file=None,                    
+@task(output_bnd_file=FILE_OUT, output_cfg_file=FILE_OUT, input_file=FILE_IN)
+def build_model_from_species(
                         output_bnd_file=None,
-                        output_cfg_file=None
+                        output_cfg_file=None,
+                        input_file_flag="--list-genes",input_file=None
                         ):                     
     # The Definition is equal to:
     #    cp <input_file> <output_file> -v
     # Empty function since it represents a binary execution:
     pass
+
+
+@container(engine="SINGULARITY", image=FROM_SPECIES_TO_MABOSS_MODEL_CONTAINER)
+@binary(binary="FromSpeciesToMaBoSSModel.sh")                                        
+@task(output_bnd_file=FILE_OUT, output_cfg_file=FILE_OUT, input_file=FILE_IN)
+def build_model_from_sif(output_bnd_file=None,
+                        output_cfg_file=None,
+                        input_file_flag="--sif-file",input_file=None
+                        ):                     
+    # The Definition is equal to:
+    #    cp <input_file> <output_file> -v
+    # Empty function since it represents a binary execution:
+    pass
+
+
 
 
 def invoke(input, output, config):
@@ -57,9 +73,23 @@ def invoke(input, output, config):
     # Sample permedcoe environment get:
     #     env_vars = get_environment()
     # Retrieves the extra flags from permedcoe.
-    input_file = input[0]
-    output_bnd_file = output[0]
-    output_cfg_file = output[1]
-    build_model_from_species(input_file=input_file,
-                        output_bnd_file=output_bnd_file,
-                        output_cfg_file=output_cfg_file)
+    
+    if 'build_model_from' in config.keys() and config['build_model_from'] == "genes":
+        print("list genes")
+        input_file = input[0]
+        output_bnd_file = output[0]
+        output_cfg_file = output[1]
+        build_model_from_species(input_file=input_file,
+                            output_bnd_file=output_bnd_file,
+                            output_cfg_file=output_cfg_file)
+    
+    elif 'build_model_from' in config.keys() and config['build_model_from'] == "sif":
+        
+        print("SIF file")
+        input_file = input[0]
+        output_bnd_file = output[0]
+        output_cfg_file = output[1]
+        build_model_from_sif(input_file=input_file,
+                            output_bnd_file=output_bnd_file,
+                            output_cfg_file=output_cfg_file)
+    

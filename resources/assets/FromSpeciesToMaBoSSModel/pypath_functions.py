@@ -157,62 +157,78 @@ def search_neigh_interactions(gene, gene_dict, graph):
 #with this function, you can select two node of one of your graph, and check which are the shortest paths
 #that link the two node, and then plot them
 
-def write_bnet(graph, gene_dict, name="logic_formula.bnet"): # make this optional
-    #database = ['SIGNOR', "Adhesome"]  # ==> insert name of the database
+def write_bnet(graph, gene_dict, name="logic_formula.bnet"):
+    # database = ['SIGNOR', "Adhesome"]  # ==> insert name of the database
     edge_df = show_edge_dataframe(graph, gene_dict)
-    #df_signor = edge_df[pd.DataFrame(edge_df.sources.tolist()).isin(database).any(1).values] # I have filtered the dictionary to have directed interaction from signor
+    # df_signor = edge_df[pd.DataFrame(edge_df.sources.tolist()).isin(database).any(1).values] # I have filtered the dictionary to have directed interaction from signor
     node_list = []
     for element in edge_df["attrs"]:
         if element.consensus_edges() != []:
-            node_list.append(element.consensus_edges()[0][0].label) #I am storing into a list the labels (genesymbol) of the genes in "sources", I will use it later
-            node_list.append(element.consensus_edges()[0][1].label) #I am storing into a list the labels (genesymbol) of the genes in "target", I will use it later
-    node_list = list(dict.fromkeys(node_list)) # now I have collected in a list all the genes that I have found with directed interactions and without duplicates
-    #print(node_list)
+            node_list.append(element.consensus_edges()[0][
+                                 0].label)  # I am storing into a list the labels (genesymbol) of the genes in "sources", I will use it later
+            node_list.append(element.consensus_edges()[0][
+                                 1].label)  # I am storing into a list the labels (genesymbol) of the genes in "target", I will use it later
+    node_list = list(dict.fromkeys(
+        node_list))  # now I have collected in a list all the genes that I have found with directed interactions and without duplicates
+    # print(node_list)
     with open(name, "w") as f:
-#         f.write("# model in BoolNet format\n")
-#         f.write("# the header targets, factors is mandatory to be importable in the R package BoolNet\n")
-#         f.write("\n")
-#         f.write("targets, factors\n") # this is the standard label that I found in the biolqm github, is it ok? lo scopriremo solo vivendo
+        # f.write("# model in BoolNet format\n")
+        # f.write("# the header targets, factors is mandatory to be importable in the R package BoolNet\n")
+        # f.write("\n")
+        # f.write(
+        #     "targets, factors\n")  # this is the standard label that I found in the biolqm github, is it ok? lo scopriremo solo vivendo
         for node in node_list:
             formula_ON = []
             formula_OFF = []
             for element in edge_df["attrs"]:
                 interactions = element.consensus_edges()
-                for interaction in interactions: #iterate over the possible interactions
-                    if interaction != []:  # I don't know why, but some interactions are empty... so I am using this to skip the empty interactions
-                        if interaction[1].label == node: # that's tricky one... when you write a bnet file (gene, formula) the gene is not the source, but the target! so I have to iterate between the targets
-                            #print(element.consensus_edges()[0][1].label, "  ", node ) # used to check
-                            if interaction[2] == "directed" and interaction[3] == "positive": # checking if the interaction is positive
-                                source = interaction[0].label # if it is, store the source of the positive interaction
-                                formula_ON.append(source) # append the gene into the list
-                            elif interaction[2] == "directed" and interaction[3] == "negative": # checking if the interaction is negative
-                                source = interaction[0].label # storing
-                                formula_OFF.append(source) # append it to the formula with "!"
+                for interaction in interactions:  # iterate over the possible interactions
+                    if interaction:  # I don't know why, but some interactions are empty... so I am using this to skip the empty interactions
+                        if interaction[
+                            1].label == node:  # that's tricky one... when you write a bnet file (gene, formula) the gene is not the source, but the target! so I have to iterate between the targets
+                            # print(element.consensus_edges()[0][1].label, "  ", node ) # used to check
+                            if interaction[2] == "directed" and interaction[
+                                3] == "positive":  # checking if the interaction is positive
+                                source = interaction[0].label  # if it is, store the source of the positive interaction
+                                formula_ON.append(source)  # append the gene into the list
+                            elif interaction[2] == "directed" and interaction[
+                                3] == "negative":  # checking if the interaction is negative
+                                source = interaction[0].label  # storing
+                                formula_OFF.append(source)  # append it to the formula with "!"
                             else:
-                                print("there is an undirected interaction that was dismissed: ", interaction[0].label, " and ", interaction[1].label) # this should never happen, ma non si sa mai...
+                                print("there is an undirected interaction that was dismissed: ", interaction[0].label,
+                                      " and ", interaction[1].label)  # this should never happen, ma non si sa mai...
             formula = formula_ON + formula_OFF
             commons = list(set(formula_ON).intersection(set(formula_OFF)))
-            #print(shared)
+            # print(shared)
             for common in commons:
                 print("Two possible opposite interactions found for: ", common, " and ", node)
                 formula_OFF.remove(common)
             f.write(node + ",")
             offset = 16 - len(node)  # nice offset so the visualization is understandable
             f.write(" " * offset)
-            if formula == []:
+            if not formula:
                 f.write(" ( ")
                 f.write(node)
                 f.write(" ) ")
-            if formula_ON != []: 
+                f.write("\n")
+            if formula_ON:
                 f.write(" ( ")
-                f.write(" | ".join(formula_ON)) # writing the first parenthesis with all the positive interactions
+                f.write(" | ".join(formula_ON))  # writing the first parenthesis with all the positive interactions
                 f.write(" ) ")
+                if not formula_OFF:
+                    f.write("\n")
             if formula_ON != [] and formula_OFF != []:
                 f.write(" & ")
-            if formula_OFF != []:
                 f.write(" !( ")
                 f.write(" | ".join(formula_OFF))  # writing the first parenthesis with all the positive interactions
                 f.write(" ) ")
-            f.write("\n")
-    f.close # good to go
+                f.write("\n")
+            if formula_ON == [] and formula_OFF != []:
+                f.write(" !( ")
+                f.write(" | ".join(formula_OFF))  # writing the first parenthesis with all the positive interactions
+                f.write(" ) ")
+                f.write("\n")
+    f.close  # good to go
     return
+

@@ -1,5 +1,0 @@
-/home/javier/.local/lib/python3.10/site-packages/uc2_BBs-0.0.1-py3.10.egg
-/home/javier/.local/bin/build_model_from_genes
-/home/javier/.local/bin/maboss_bb
-/home/javier/.local/bin/personalize_patient
-/home/javier/.local/bin/print_drug_results
