@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import csv
 
 # To set building block debug mode
 from permedcoe import set_debug
@@ -19,6 +20,28 @@ from helpers import get_genefiles
 from pycompss.api.api import compss_wait_on_directory
 from pycompss.api.api import compss_wait_on_file
 from pycompss.api.api import compss_barrier
+
+def get_cell_lines(rnaseq_data, limit=0):
+    """ Retrieves the cell lines from the given rnaseq_data file.
+
+    Example:
+    cell_lines = ["SIDM00003", "SIDM00023", "SIDM00040", "SIDM00041"]
+
+    :param rnaseq_data: Rnaseq csv file
+    :type rnaseq_data: string
+    :param limit: Maximum number of cell lines to retrieve (0 is all)
+    :type limit: int
+    :return: List of strings with the cell identifiers
+    :rtype: [string]
+    """
+    with open(rnaseq_data, "r") as rnaseq_file:
+        rnaseq_file_reader = csv.DictReader(rnaseq_file, delimiter=',')
+        header = rnaseq_file_reader.fieldnames
+    cell_lines = header[2:]  # removes the two first fields ('model_id', '',...)
+    if limit == 0:
+        return cell_lines
+    else:
+        return cell_lines[:limit]
 
 def main():
     """
@@ -48,7 +71,9 @@ def main():
         output_cfg_file=model_cfg_path
     )
 
-    cell_lines = ["SIDM00003", "SIDM00023"] #, "SIDM00040", "SIDM00041"]  # TODO: get this list from rnasec csv
+    # Get cell lines from rnaseq csv file
+    cell_lines = get_cell_lines(args.rnaseq_data, limit=3)
+
     personalize_patient_folder = os.path.join(args.results_folder, "personalize_patient")
     os.makedirs(personalize_patient_folder, exist_ok=True)
     mutant_results_folder = os.path.join(args.results_folder, "mutant_results")
