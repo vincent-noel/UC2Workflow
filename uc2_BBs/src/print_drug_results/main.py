@@ -137,6 +137,8 @@ def print_results(dfs, report_folder):
         ax.set_title(target)
         plt.subplots_adjust(left=0.3)
         plt.savefig(os.path.join(report_folder, (target + ".png")))
+        
+        df.to_csv(os.path.join(report_folder, (target + ".csv")))
 
 
 #######################################

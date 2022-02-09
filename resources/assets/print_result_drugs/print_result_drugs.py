@@ -65,3 +65,6 @@ for target, df in dfs.items():
     ax.set_title(target)
     plt.subplots_adjust(left=0.3)
     plt.savefig(os.path.join(args.report_folder, (target + ".png")))
+    
+    df.to_csv(os.path.join(args.report_folder, (target + ".csv")))
+
